@@ -33,8 +33,8 @@ type Inbound struct {
 	logger       log.ContextLogger
 	listener     *listener.Listener
 	tlsConfig    tls.ServerConfig
-	server       *tuic.Service[int]
-	userNameList []string
+	server *tuic.Service[int]
+	users *userIDAllocator
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.TUICInboundOptions) (adapter.Inbound, error) {
@@ -77,10 +77,9 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 	if err != nil {
 		return nil, err
 	}
-	var userList []int
-	var userNameList []string
-	var userUUIDList [][16]byte
-	var userPasswordList []string
+	names := make([]string, len(options.Users))
+	userUUIDList := make([][16]byte, len(options.Users))
+	userPasswordList := make([]string, len(options.Users))
 	for index, user := range options.Users {
 		if user.UUID == "" {
 			return nil, E.New("missing uuid for user ", index)
@@ -89,14 +88,14 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 		if err != nil {
 			return nil, E.Cause(err, "invalid uuid for user ", index)
 		}
-		userList = append(userList, index)
-		userNameList = append(userNameList, user.Name)
-		userUUIDList = append(userUUIDList, userUUID)
-		userPasswordList = append(userPasswordList, user.Password)
+		names[index] = user.Name
+		userUUIDList[index] = userUUID
+		userPasswordList[index] = user.Password
 	}
-	service.UpdateUsers(userList, userUUIDList, userPasswordList)
+	inbound.users = newUserIDAllocator()
+	ids := inbound.users.reset(names)
+	service.UpdateUsers(ids, userUUIDList, userPasswordList)
 	inbound.server = service
-	inbound.userNameList = userNameList
 	return inbound, nil
 }
 
@@ -113,7 +112,7 @@ func (h *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, source M.S
 	metadata.Destination = destination
 	h.logger.InfoContext(ctx, "inbound connection from ", metadata.Source)
 	userID, _ := auth.UserFromContext[int](ctx)
-	if userName := h.userNameList[userID]; userName != "" {
+	if userName, ok := h.users.name(userID); ok && userName != "" {
 		metadata.User = userName
 		h.logger.InfoContext(ctx, "[", userName, "] inbound connection to ", metadata.Destination)
 	} else {
@@ -135,7 +134,7 @@ func (h *Inbound) NewPacketConnectionEx(ctx context.Context, conn N.PacketConn, 
 	metadata.Destination = destination
 	h.logger.InfoContext(ctx, "inbound packet connection from ", metadata.Source)
 	userID, _ := auth.UserFromContext[int](ctx)
-	if userName := h.userNameList[userID]; userName != "" {
+	if userName, ok := h.users.name(userID); ok && userName != "" {
 		metadata.User = userName
 		h.logger.InfoContext(ctx, "[", userName, "] inbound packet connection to ", metadata.Destination)
 	} else {

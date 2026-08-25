@@ -1,14 +1,13 @@
 package tuic
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing/common/exceptions"
+	exceptions "github.com/sagernet/sing/common/exceptions"
+	"github.com/gofrs/uuid/v5"
 )
 
 func (h *Inbound) UpdateUsers(users []option.TUICUser) error {
-	var userList []int
-	var userNameList []string
+	var names []string
 	var userUUIDList [][16]byte
 	var userPasswordList []string
 	for index, user := range users {
@@ -19,12 +18,11 @@ func (h *Inbound) UpdateUsers(users []option.TUICUser) error {
 		if err != nil {
 			return exceptions.Cause(err, "invalid uuid for user ", index)
 		}
-		userList = append(userList, index)
-		userNameList = append(userNameList, user.Name)
+		names = append(names, user.Name)
 		userUUIDList = append(userUUIDList, userUUID)
 		userPasswordList = append(userPasswordList, user.Password)
 	}
-	h.server.UpdateUsers(userList, userUUIDList, userPasswordList)
-	h.userNameList = userNameList
+	ids := h.users.reset(names)
+	h.server.UpdateUsers(ids, userUUIDList, userPasswordList)
 	return nil
 }
