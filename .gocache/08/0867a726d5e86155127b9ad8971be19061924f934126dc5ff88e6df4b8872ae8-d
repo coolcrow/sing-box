@@ -1,0 +1,3 @@
+./adapter.go
+./manager.go
+./registry.go

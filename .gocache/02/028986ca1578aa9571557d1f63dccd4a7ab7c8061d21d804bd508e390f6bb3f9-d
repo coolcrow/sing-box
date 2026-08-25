@@ -1,0 +1,17 @@
+./attached_service.go
+./client.go
+./deprecated.go
+./instance.go
+./locale.go
+./log_ring.go
+./managed_service.go
+./managed_service.pb.go
+./managed_service_grpc.pb.go
+./platform.go
+./server.go
+./started_service.go
+./started_service.pb.go
+./started_service_grpc.pb.go
+./started_service_taildrop.go
+./started_service_tailscale_ssh.go
+./started_service_usbip_stub.go

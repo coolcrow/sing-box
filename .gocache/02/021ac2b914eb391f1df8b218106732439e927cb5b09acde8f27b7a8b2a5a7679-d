@@ -1,0 +1,11 @@
+./ccm_stub.go
+./clashapi_stub.go
+./dhcp_stub.go
+./naive_outbound_stub.go
+./ocm_stub.go
+./oom_killer.go
+./quic.go
+./registry.go
+./tailscale_stub.go
+./v2rayapi_stub.go
+./wireguard_stub.go
