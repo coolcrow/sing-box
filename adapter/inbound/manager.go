@@ -90,5 +90,8 @@ func (m *Manager) Remove(tag string) error {
 	if !loaded {
 		return E.New("inbound not found: ", tag)
 	}
-	return inbound.Close()
+	if lc, ok := inbound.(adapter.Lifecycle); ok {
+		return lc.Close()
+	}
+	return nil
 }
