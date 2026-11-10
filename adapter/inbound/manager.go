@@ -72,3 +72,23 @@ func (m *Manager) Create(ctx context.Context, router adapter.Router, logger log.
 	m.inboundByTag[tag] = inbound
 	return nil
 }
+
+func (m *Manager) Remove(tag string) error {
+	m.access.Lock()
+	inbound, loaded := m.inboundByTag[tag]
+	if loaded {
+		delete(m.inboundByTag, tag)
+		filtered := m.inbounds[:0]
+		for _, inb := range m.inbounds {
+			if inb != inbound {
+				filtered = append(filtered, inb)
+			}
+		}
+		m.inbounds = filtered
+	}
+	m.access.Unlock()
+	if !loaded {
+		return E.New("inbound not found: ", tag)
+	}
+	return inbound.Close()
+}
