@@ -6,11 +6,7 @@ import (
 	"net/netip"
 	"time"
 
-<<<<<<< HEAD
-=======
-	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
->>>>>>> 3ac22acd (Add UpdateUsers interface for various inbound protocols)
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/gtcpip/header"
 	M "github.com/sagernet/sing/common/metadata"
