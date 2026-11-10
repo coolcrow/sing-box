@@ -6,7 +6,6 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing-tun/gtcpip/header"
 	M "github.com/sagernet/sing/common/metadata"
@@ -29,7 +28,6 @@ type Router interface {
 	NeighborResolver() NeighborResolver
 	AppendTracker(tracker ConnectionTracker)
 	ResetNetwork()
-	UpdateRules(rules []option.Rule, ruleSets []option.RuleSet) error
 }
 
 type PreMatchAction uint8
